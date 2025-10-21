@@ -1,0 +1,15 @@
+# Copy this file to application-local.properties and add your secrets
+# application-local.properties is ignored by git
+
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://your-supabase-host:5432/postgres
+spring.datasource.username=your-db-user
+spring.datasource.password=your-db-password
+
+# JWT Secret (generate a secure random string)
+# You can generate one using: openssl rand -base64 64
+jwt.secret=your-jwt-secret-key-here-at-least-256-bits
+jwt.expiration=86400000
+
+# Other secrets
+# api.key=your-api-key-here

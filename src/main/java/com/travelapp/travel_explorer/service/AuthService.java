@@ -1,0 +1,70 @@
+package com.travelapp.travel_explorer.service;
+
+import com.travelapp.travel_explorer.dto.AuthResponse;
+import com.travelapp.travel_explorer.dto.LoginRequest;
+import com.travelapp.travel_explorer.dto.RegisterRequest;
+import com.travelapp.travel_explorer.dto.UserDto;
+import com.travelapp.travel_explorer.model.User;
+import com.travelapp.travel_explorer.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+    
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email is already registered");
+        }
+        
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setDisplayName(request.getDisplayName());
+        
+        User savedUser = userRepository.save(user);
+        
+        // For simplicity, returning a mock token. In production, use JWT
+        String token = "mock-jwt-token-" + savedUser.getId();
+        
+        UserDto userDto = convertToDto(savedUser);
+        return new AuthResponse(token, userDto);
+    }
+    
+    public AuthResponse login(LoginRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+        
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // For simplicity, returning a mock token. In production, use JWT
+        String token = "mock-jwt-token-" + user.getId();
+        
+        UserDto userDto = convertToDto(user);
+        return new AuthResponse(token, userDto);
+    }
+    
+    private UserDto convertToDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getEmail(),
+                user.getDisplayName(),
+                user.getCreatedAt()
+        );
+    }
+}

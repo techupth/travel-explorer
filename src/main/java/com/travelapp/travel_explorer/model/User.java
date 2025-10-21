@@ -1,0 +1,34 @@
+package com.travelapp.travel_explorer.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.OffsetDateTime;
+
+@Entity
+@Table(name = "users")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false, unique = true)
+    private String email;
+    
+    @Column(name = "password_hash", nullable = false, columnDefinition = "TEXT")
+    private String passwordHash;
+    
+    @Column(name = "display_name", length = 100)
+    private String displayName;
+    
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime createdAt;
+}
