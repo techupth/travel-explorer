@@ -6,6 +6,7 @@ import com.travelapp.travel_explorer.dto.RegisterRequest;
 import com.travelapp.travel_explorer.dto.UserDto;
 import com.travelapp.travel_explorer.model.User;
 import com.travelapp.travel_explorer.repository.UserRepository;
+import com.travelapp.travel_explorer.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
     
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -34,8 +36,7 @@ public class AuthService {
         
         User savedUser = userRepository.save(user);
         
-        // For simplicity, returning a mock token. In production, use JWT
-        String token = "mock-jwt-token-" + savedUser.getId();
+        String token = jwtTokenProvider.generateToken(savedUser.getEmail(), savedUser.getId());
         
         UserDto userDto = convertToDto(savedUser);
         return new AuthResponse(token, userDto);
@@ -52,8 +53,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        // For simplicity, returning a mock token. In production, use JWT
-        String token = "mock-jwt-token-" + user.getId();
+        String token = jwtTokenProvider.generateToken(user.getEmail(), user.getId());
         
         UserDto userDto = convertToDto(user);
         return new AuthResponse(token, userDto);
