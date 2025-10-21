@@ -15,9 +15,6 @@ public class TripDto {
     
     private Long id;
     
-    @NotBlank(message = "EID is required")
-    private String eid;
-    
     @NotBlank(message = "Title is required")
     private String title;
     

@@ -27,11 +27,6 @@ public class TripController {
         return ResponseEntity.ok(tripService.getTripById(id));
     }
     
-    @GetMapping("/eid/{eid}")
-    public ResponseEntity<TripDto> getTripByEid(@PathVariable String eid) {
-        return ResponseEntity.ok(tripService.getTripByEid(eid));
-    }
-    
     @GetMapping("/author/{authorId}")
     public ResponseEntity<List<TripDto>> getTripsByAuthor(@PathVariable Long authorId) {
         return ResponseEntity.ok(tripService.getTripsByAuthor(authorId));

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,12 +28,6 @@ public class TripService {
     public TripDto getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
-        return convertToDto(trip);
-    }
-    
-    public TripDto getTripByEid(String eid) {
-        Trip trip = tripRepository.findByEid(eid)
-                .orElseThrow(() -> new RuntimeException("Trip not found with eid: " + eid));
         return convertToDto(trip);
     }
     
@@ -59,12 +52,6 @@ public class TripService {
     @Transactional
     public TripDto createTrip(TripDto tripDto) {
         Trip trip = convertToEntity(tripDto);
-        
-        // Generate unique EID if not provided
-        if (trip.getEid() == null || trip.getEid().isEmpty()) {
-            trip.setEid(UUID.randomUUID().toString().substring(0, 8));
-        }
-        
         Trip saved = tripRepository.save(trip);
         return convertToDto(saved);
     }
@@ -93,7 +80,6 @@ public class TripService {
     private TripDto convertToDto(Trip trip) {
         TripDto dto = new TripDto();
         dto.setId(trip.getId());
-        dto.setEid(trip.getEid());
         dto.setTitle(trip.getTitle());
         dto.setDescription(trip.getDescription());
         dto.setPhotos(trip.getPhotos());
@@ -114,7 +100,6 @@ public class TripService {
     
     private Trip convertToEntity(TripDto dto) {
         Trip trip = new Trip();
-        trip.setEid(dto.getEid());
         trip.setTitle(dto.getTitle());
         trip.setDescription(dto.getDescription());
         trip.setPhotos(dto.getPhotos() != null ? dto.getPhotos() : new String[0]);
