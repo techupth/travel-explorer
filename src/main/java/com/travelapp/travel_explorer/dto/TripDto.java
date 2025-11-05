@@ -1,7 +1,6 @@
 package com.travelapp.travel_explorer.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,10 +19,9 @@ public class TripDto {
     
     private String description;
     
-    @NotNull(message = "Photos are required")
+    // ไม่ต้อง @NotNull เพื่อให้รองรับ Partial Update
     private String[] photos;
     
-    @NotNull(message = "Tags are required")
     private String[] tags;
     
     private Double latitude;

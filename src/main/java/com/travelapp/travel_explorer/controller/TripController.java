@@ -1,6 +1,5 @@
 package com.travelapp.travel_explorer.controller;
 
-import com.travelapp.travel_explorer.dto.AttachPhotoRequest;
 import com.travelapp.travel_explorer.dto.TripDto;
 import com.travelapp.travel_explorer.service.TripService;
 import jakarta.validation.Valid;
@@ -19,7 +18,11 @@ public class TripController {
     private final TripService tripService;
     
     @GetMapping
-    public ResponseEntity<List<TripDto>> getAllTrips() {
+    public ResponseEntity<List<TripDto>> getAllTrips(
+            @RequestParam(required = false) String query) {
+        if (query != null && !query.trim().isEmpty()) {
+            return ResponseEntity.ok(tripService.searchTrips(query.trim()));
+        }
         return ResponseEntity.ok(tripService.getAllTrips());
     }
     
@@ -28,19 +31,10 @@ public class TripController {
         return ResponseEntity.ok(tripService.getTripById(id));
     }
     
-    @GetMapping("/author/{authorId}")
-    public ResponseEntity<List<TripDto>> getTripsByAuthor(@PathVariable Long authorId) {
-        return ResponseEntity.ok(tripService.getTripsByAuthor(authorId));
-    }
-    
-    @GetMapping("/search")
-    public ResponseEntity<List<TripDto>> searchTrips(@RequestParam String query) {
-        return ResponseEntity.ok(tripService.searchTrips(query));
-    }
-    
-    @GetMapping("/tag/{tag}")
-    public ResponseEntity<List<TripDto>> getTripsByTag(@PathVariable String tag) {
-        return ResponseEntity.ok(tripService.getTripsByTag(tag));
+    @GetMapping("/mine")
+    public ResponseEntity<List<TripDto>> getMyTrips(Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok(tripService.getMyTrips(username));
     }
     
     @PostMapping
@@ -67,14 +61,5 @@ public class TripController {
         String username = authentication.getName();
         tripService.deleteTrip(id, username);
         return ResponseEntity.noContent().build();
-    }
-    
-    @PostMapping("/{id}/photos")
-    public ResponseEntity<TripDto> attachPhotoUrl(
-            @PathVariable Long id,
-            @Valid @RequestBody AttachPhotoRequest request,
-            Authentication authentication) {
-        String username = authentication.getName();
-        return ResponseEntity.ok(tripService.attachPhotoUrl(id, request.getUrl(), username));
     }
 }

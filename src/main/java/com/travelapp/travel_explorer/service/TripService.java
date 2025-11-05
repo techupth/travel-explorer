@@ -31,20 +31,16 @@ public class TripService {
         return convertToDto(trip);
     }
     
-    public List<TripDto> getTripsByAuthor(Long authorId) {
-        return tripRepository.findByAuthorId(authorId).stream()
+    public List<TripDto> getMyTrips(String username) {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        return tripRepository.findByAuthorId(user.getId()).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
     
     public List<TripDto> searchTrips(String query) {
-        return tripRepository.findByTitleContainingIgnoreCase(query).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-    
-    public List<TripDto> getTripsByTag(String tag) {
-        return tripRepository.findByTagsContaining(tag).stream()
+        return tripRepository.searchTrips(query).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -72,12 +68,30 @@ public class TripService {
             throw new RuntimeException("Unauthorized: You can only edit your own trips");
         }
         
-        trip.setTitle(tripDto.getTitle());
-        trip.setDescription(tripDto.getDescription());
-        trip.setPhotos(tripDto.getPhotos());
-        trip.setTags(tripDto.getTags());
-        trip.setLatitude(tripDto.getLatitude());
-        trip.setLongitude(tripDto.getLongitude());
+        // ✅ Partial Update - อัปเดตเฉพาะฟิลด์ที่ส่งมา (ไม่ใช่ null)
+        if (tripDto.getTitle() != null && !tripDto.getTitle().trim().isEmpty()) {
+            trip.setTitle(tripDto.getTitle());
+        }
+        
+        if (tripDto.getDescription() != null) {
+            trip.setDescription(tripDto.getDescription());
+        }
+        
+        if (tripDto.getPhotos() != null) {
+            trip.setPhotos(tripDto.getPhotos());
+        }
+        
+        if (tripDto.getTags() != null) {
+            trip.setTags(tripDto.getTags());
+        }
+        
+        if (tripDto.getLatitude() != null) {
+            trip.setLatitude(tripDto.getLatitude());
+        }
+        
+        if (tripDto.getLongitude() != null) {
+            trip.setLongitude(tripDto.getLongitude());
+        }
         
         Trip updated = tripRepository.save(trip);
         return convertToDto(updated);
@@ -94,27 +108,6 @@ public class TripService {
         }
         
         tripRepository.deleteById(id);
-    }
-    
-    @Transactional
-    public TripDto attachPhotoUrl(Long id, String url, String username) {
-        Trip trip = tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
-        
-        // ✅ ตรวจสอบว่าเป็นเจ้าของหรือไม่
-        if (!trip.getAuthor().getEmail().equals(username)) {
-            throw new RuntimeException("Unauthorized: You can only edit your own trips");
-        }
-        
-        // เพิ่ม URL ใหม่เข้าไปใน photos array
-        String[] currentPhotos = trip.getPhotos();
-        String[] newPhotos = new String[currentPhotos.length + 1];
-        System.arraycopy(currentPhotos, 0, newPhotos, 0, currentPhotos.length);
-        newPhotos[currentPhotos.length] = url;
-        
-        trip.setPhotos(newPhotos);
-        Trip saved = tripRepository.save(trip);
-        return convertToDto(saved);
     }
     
     private TripDto convertToDto(Trip trip) {

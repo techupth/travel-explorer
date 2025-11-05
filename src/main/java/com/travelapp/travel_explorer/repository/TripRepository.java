@@ -13,10 +13,13 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     
     List<Trip> findByAuthorId(Long authorId);
     
-    List<Trip> findByTitleContainingIgnoreCase(String title);
-    
-    @Query(value = "SELECT * FROM trips WHERE :tag = ANY(tags)", nativeQuery = true)
-    List<Trip> findByTagsContaining(@Param("tag") String tag);
+    @Query(value = "SELECT DISTINCT t.* FROM trips t WHERE " +
+           "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "EXISTS (SELECT 1 FROM unnest(t.tags) tag WHERE LOWER(tag) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "ORDER BY t.created_at DESC", 
+           nativeQuery = true)
+    List<Trip> searchTrips(@Param("query") String query);
     
     List<Trip> findAllByOrderByCreatedAtDesc();
 }
