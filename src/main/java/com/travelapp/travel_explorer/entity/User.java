@@ -1,4 +1,4 @@
-package com.travelapp.travel_explorer.model;
+package com.travelapp.travel_explorer.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

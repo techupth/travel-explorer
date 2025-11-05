@@ -1,6 +1,6 @@
 package com.travelapp.travel_explorer.repository;
 
-import com.travelapp.travel_explorer.model.User;
+import com.travelapp.travel_explorer.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

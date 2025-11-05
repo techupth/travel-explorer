@@ -4,7 +4,7 @@ import com.travelapp.travel_explorer.dto.AuthResponse;
 import com.travelapp.travel_explorer.dto.LoginRequest;
 import com.travelapp.travel_explorer.dto.RegisterRequest;
 import com.travelapp.travel_explorer.dto.UserDto;
-import com.travelapp.travel_explorer.model.User;
+import com.travelapp.travel_explorer.entity.User;
 import com.travelapp.travel_explorer.repository.UserRepository;
 import com.travelapp.travel_explorer.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;

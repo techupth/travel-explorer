@@ -1,6 +1,6 @@
 package com.travelapp.travel_explorer.repository;
 
-import com.travelapp.travel_explorer.model.Trip;
+import com.travelapp.travel_explorer.entity.Trip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

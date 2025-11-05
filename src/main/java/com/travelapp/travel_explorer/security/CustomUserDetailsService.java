@@ -1,6 +1,6 @@
 package com.travelapp.travel_explorer.security;
 
-import com.travelapp.travel_explorer.model.User;
+import com.travelapp.travel_explorer.entity.User;
 import com.travelapp.travel_explorer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
