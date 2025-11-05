@@ -50,16 +50,27 @@ public class TripService {
     }
     
     @Transactional
-    public TripDto createTrip(TripDto tripDto) {
+    public TripDto createTrip(TripDto tripDto, String username) {
+        // ✅ หา user จาก username (email)
+        User author = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        
         Trip trip = convertToEntity(tripDto);
+        trip.setAuthor(author); // ✅ ตั้ง author เป็นคนที่ login
+        
         Trip saved = tripRepository.save(trip);
         return convertToDto(saved);
     }
     
     @Transactional
-    public TripDto updateTrip(Long id, TripDto tripDto) {
+    public TripDto updateTrip(Long id, TripDto tripDto, String username) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+        
+        // ✅ ตรวจสอบว่าเป็นเจ้าของหรือไม่
+        if (!trip.getAuthor().getEmail().equals(username)) {
+            throw new RuntimeException("Unauthorized: You can only edit your own trips");
+        }
         
         trip.setTitle(tripDto.getTitle());
         trip.setDescription(tripDto.getDescription());
@@ -73,8 +84,37 @@ public class TripService {
     }
     
     @Transactional
-    public void deleteTrip(Long id) {
+    public void deleteTrip(Long id, String username) {
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+        
+        // ✅ ตรวจสอบว่าเป็นเจ้าของหรือไม่
+        if (!trip.getAuthor().getEmail().equals(username)) {
+            throw new RuntimeException("Unauthorized: You can only delete your own trips");
+        }
+        
         tripRepository.deleteById(id);
+    }
+    
+    @Transactional
+    public TripDto attachPhotoUrl(Long id, String url, String username) {
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+        
+        // ✅ ตรวจสอบว่าเป็นเจ้าของหรือไม่
+        if (!trip.getAuthor().getEmail().equals(username)) {
+            throw new RuntimeException("Unauthorized: You can only edit your own trips");
+        }
+        
+        // เพิ่ม URL ใหม่เข้าไปใน photos array
+        String[] currentPhotos = trip.getPhotos();
+        String[] newPhotos = new String[currentPhotos.length + 1];
+        System.arraycopy(currentPhotos, 0, newPhotos, 0, currentPhotos.length);
+        newPhotos[currentPhotos.length] = url;
+        
+        trip.setPhotos(newPhotos);
+        Trip saved = tripRepository.save(trip);
+        return convertToDto(saved);
     }
     
     private TripDto convertToDto(Trip trip) {
@@ -116,3 +156,4 @@ public class TripService {
         return trip;
     }
 }
+

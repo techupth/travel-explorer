@@ -3,6 +3,7 @@ package com.travelapp.travel_explorer.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -44,8 +45,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/trips/**").permitAll()
+                // ✅ login/register ไม่ต้อง token
+                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                // ❌ /api/auth/me ต้อง login
+                .requestMatchers("/api/auth/me").authenticated()
+                // ✅ GET trips ไม่ต้อง login
+                .requestMatchers(HttpMethod.GET, "/api/trips/**").permitAll()
+                // ❌ POST, PUT, DELETE trips ต้อง login
+                .requestMatchers(HttpMethod.POST, "/api/trips/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/trips/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/trips/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -56,7 +65,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        // ✅ อนุญาตทุก origin
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

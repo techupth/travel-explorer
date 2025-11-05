@@ -59,6 +59,12 @@ public class AuthService {
         return new AuthResponse(token, userDto);
     }
     
+    public UserDto getCurrentUser(String username) {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return convertToDto(user);
+    }
+    
     private UserDto convertToDto(User user) {
         return new UserDto(
                 user.getId(),
