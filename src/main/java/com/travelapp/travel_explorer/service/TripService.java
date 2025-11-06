@@ -3,6 +3,8 @@ package com.travelapp.travel_explorer.service;
 import com.travelapp.travel_explorer.dto.TripDto;
 import com.travelapp.travel_explorer.entity.Trip;
 import com.travelapp.travel_explorer.entity.User;
+import com.travelapp.travel_explorer.exception.ForbiddenException;
+import com.travelapp.travel_explorer.exception.ResourceNotFoundException;
 import com.travelapp.travel_explorer.repository.TripRepository;
 import com.travelapp.travel_explorer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +29,13 @@ public class TripService {
     
     public TripDto getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + id));
         return convertToDto(trip);
     }
     
     public List<TripDto> getMyTrips(String username) {
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
         return tripRepository.findByAuthorId(user.getId()).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -49,7 +51,7 @@ public class TripService {
     public TripDto createTrip(TripDto tripDto, String username) {
         // ✅ หา user จาก username (email)
         User author = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
         
         Trip trip = convertToEntity(tripDto);
         trip.setAuthor(author); // ✅ ตั้ง author เป็นคนที่ login
@@ -61,11 +63,11 @@ public class TripService {
     @Transactional
     public TripDto updateTrip(Long id, TripDto tripDto, String username) {
         Trip trip = tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + id));
         
         // ✅ ตรวจสอบว่าเป็นเจ้าของหรือไม่
         if (!trip.getAuthor().getEmail().equals(username)) {
-            throw new RuntimeException("Unauthorized: You can only edit your own trips");
+            throw new ForbiddenException("You can only edit your own trips");
         }
         
         // ✅ Partial Update - อัปเดตเฉพาะฟิลด์ที่ส่งมา (ไม่ใช่ null)
@@ -100,11 +102,11 @@ public class TripService {
     @Transactional
     public void deleteTrip(Long id, String username) {
         Trip trip = tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + id));
         
         // ✅ ตรวจสอบว่าเป็นเจ้าของหรือไม่
         if (!trip.getAuthor().getEmail().equals(username)) {
-            throw new RuntimeException("Unauthorized: You can only delete your own trips");
+            throw new ForbiddenException("You can only delete your own trips");
         }
         
         tripRepository.deleteById(id);
@@ -142,7 +144,7 @@ public class TripService {
         
         if (dto.getAuthorId() != null) {
             User author = userRepository.findById(dto.getAuthorId())
-                    .orElseThrow(() -> new RuntimeException("Author not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Author not found"));
             trip.setAuthor(author);
         }
         

@@ -5,6 +5,8 @@ import com.travelapp.travel_explorer.dto.LoginRequest;
 import com.travelapp.travel_explorer.dto.RegisterRequest;
 import com.travelapp.travel_explorer.dto.UserDto;
 import com.travelapp.travel_explorer.entity.User;
+import com.travelapp.travel_explorer.exception.DuplicateEmailException;
+import com.travelapp.travel_explorer.exception.ResourceNotFoundException;
 import com.travelapp.travel_explorer.repository.UserRepository;
 import com.travelapp.travel_explorer.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +28,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email is already registered");
+            throw new DuplicateEmailException("This email is already registered");
         }
         
         User user = new User();
@@ -51,7 +53,7 @@ public class AuthService {
         );
         
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         String token = jwtTokenProvider.generateToken(user.getEmail(), user.getId());
         
@@ -61,7 +63,7 @@ public class AuthService {
     
     public UserDto getCurrentUser(String username) {
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return convertToDto(user);
     }
     
