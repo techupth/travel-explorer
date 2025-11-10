@@ -90,7 +90,7 @@ Register a new user account.
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": 1,
     "email": "user@example.com",
@@ -137,7 +137,7 @@ Login with email and password to get JWT access token.
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": 1,
     "email": "user@example.com",
@@ -705,7 +705,7 @@ function CreateTripForm() {
         const uploadRes = await fetch("/api/files/upload", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: photoFormData,
         });
@@ -744,7 +744,7 @@ function CreateTripForm() {
       const createRes = await fetch("/api/trips", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(tripData),
@@ -860,7 +860,7 @@ export default CreateTripForm;
 
 ```jsx
 async function handleUpdateTrip(tripId, newPhotos = []) {
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem("token");
 
   try {
     // Step 1: Upload new photos (if any)
@@ -938,7 +938,7 @@ async function handlePhotoUpload(file) {
     const response = await fetch("/api/files/upload", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: formData,
     });
